@@ -21,9 +21,11 @@ type SearchResultResponse = {
 
 export class GoogleDriveService {
   private driveClient;
+  private driveClientV2;
 
   public constructor(clientId: string, clientSecret: string, redirectUri: string, refreshToken: string) {
     this.driveClient = this.createDriveClient(clientId, clientSecret, redirectUri, refreshToken);
+    this.driveClientV2 = this.createDriveClientV2(clientId, clientSecret, redirectUri, refreshToken);
   }
 
   createDriveClient(clientId: string, clientSecret: string, redirectUri: string, refreshToken: string) {
@@ -36,6 +38,16 @@ export class GoogleDriveService {
 
     return google.drive({
       version: 'v3',
+      auth: client,
+    });
+  }
+
+  createDriveClientV2(clientId: string, clientSecret: string, redirectUri: string, refreshToken: string) {
+    const client = new google.auth.OAuth2(clientId, clientSecret, redirectUri);
+
+    client.setCredentials({ refresh_token: refreshToken });
+    return google.drive({
+      version: 'v2',
       auth: client,
     });
   }
@@ -79,10 +91,60 @@ export class GoogleDriveService {
         mimeType: fileMimeType,
         body: fs.createReadStream(filePath),
       },
+      fields: 'id, name, exportLinks, webViewLink',
+    });
+  }
+
+  createDocsEditor(_fileMetadata: any, _media: any) {
+    return this.driveClientV2.files.insert({
+      resource: _fileMetadata,
+      media: _media,
+      fields: 'id',
+      convert: true,
+    });
+  }
+
+  assignPermission(_fileId: string) {
+    return this.driveClient.permissions.create({
+      resource: { type: 'anyone', role: 'writer' },
+      fileId: _fileId,
+      fields: 'id',
     });
   }
 
   exportFile(_fileId: string, _mimeType = 'application/pdf'): Promise<any> {
+    return this.driveClient.files.export(
+      {
+        fileId: _fileId,
+        mimeType: _mimeType,
+      },
+      //{ responseType: 'stream' },
+    );
+  }
+
+  createNewFile(_media: any, _fileMetadata: any) {
+    return this.driveClient.files.create({
+      resource: _fileMetadata,
+      media: _media,
+      fields: 'id',
+    });
+  }
+
+  getFile(_fileId) {
+    return this.driveClient.files.get({
+      fileId: _fileId,
+      fields: 'id, modifiedTime, webContentLink, mimeType, exportLinks, webViewLink',
+    });
+  }
+
+  getFileBlob(_fileId) {
+    return this.driveClient.files.get({
+      fileId: _fileId,
+      alt: 'media',
+    });
+  }
+
+  exportPdf(_fileId: string, _mimeType = 'application/pdf'): Promise<any> {
     return this.driveClient.files.export({
       fileId: _fileId,
       mimeType: _mimeType,

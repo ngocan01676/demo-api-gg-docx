@@ -31,30 +31,55 @@ const driveRefreshToken = process.env.GOOGLE_DRIVE_REFRESH_TOKEN || '';
   }
 
   //.saveFile('SpaceX', finalPath, 'image/jpg', folder.id)
+  //application/vnd.openxmlformats-officedocument.wordprocessingml.document
 
   // Todo upload file to drive
-  // await googleDriveService
-  //   .saveFile(
-  //     `SpaceX-${Math.floor(Math.random() * 1000)}`,
-  //     finalPath,
-  //     'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-  //     folder.id,
-  //   )
-  //   .then((res) => {
-  //     console.log('sssssssssssssss------------------------------------------------------------');
-  //     console.log(res);
-  //     console.log('ssssssssssssss------------------------------------------------------------');
-  //   })
-  //   .catch((error) => {
-  //     console.error(error);
-  //   });
+  const resultSaveFile = await googleDriveService.saveFile(
+    `SpaceX-${Math.floor(Math.random() * 1000)}`,
+    finalPath,
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    folder.id,
+  );
+  //Create file use version v2
+  // const fileMetadata = {
+  //   title: `SpaceX-${Math.floor(Math.random() * 1000)}`,
+  // };
+  // const media = {
+  //   mimeType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  //   body: fs.createReadStream(path.resolve(__dirname, '../public/so_yeu_li_lich.docx')),
+  // };
+  // const resultSaveFile = await googleDriveService.createDocsEditor(fileMetadata, media);
+
+  console.log('resultSaveFile', resultSaveFile);
+
+  const resultAssignPermission = await googleDriveService.assignPermission(resultSaveFile.data.id);
+
+  console.log('resultAssignPermission resultAssignPermission', resultAssignPermission);
+  //End create file use version v2
   // End todo upload file
 
-  // Todo export file
-  const resExport = await googleDriveService.exportFile('1PxFTFlH2tcKxoKoVm3uzxTbxPSTFUuo-');
+  //Todo export file
 
-  console.log('File --------------');
-  console.log(resExport);
+  // const fileMetadata = {
+  //   name: 'test 1111',
+  // };
+  // const media = {
+  //   mimeType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  //   body: fs.createReadStream(path.resolve(__dirname, '../public/so_yeu_li_lich.docx')),
+  // };
+
+  // await googleDriveService.createNewFile(media, fileMetadata);
+
+  // const resExport = await googleDriveService.exportFile('1e7t6tubI9BD_myGMA1qrTRKvtRwV4EzNd1cTNyGNGik');
+
+  // console.log('File --------------');
+  // console.log(resExport);
+
+  // // Todo get file
+  // googleDriveService.getFile('1e7t6tubI9BD_myGMA1qrTRKvtRwV4EzNd1cTNyGNGik').then((x: any) => {
+  //   console.log('-----------------------Result----------------------------');
+  //   console.log(x);
+  // });
 
   console.info('File uploaded successfully!');
 
